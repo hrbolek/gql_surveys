@@ -12,6 +12,8 @@ from sqlalchemy import (
     Sequence,
     Table,
     Boolean,
+
+    Uuid
 )
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -20,38 +22,46 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import declarative_base
 import uuid
 
+
 BaseModel = declarative_base()
 
-def newUuidAsString():
-    return f"{uuid.uuid1()}"
+# def newUuidAsString():
+#     return f"{uuid.uuid1()}"
 
 
-def UUIDColumn(name=None):
-    if name is None:
-        return Column(String, primary_key=True, unique=True, default=newUuidAsString)
-    else:
-        return Column(
-            name, String, primary_key=True, unique=True, default=newUuidAsString
-        )
+# def UUIDColumn(name=None):
+#     if name is None:
+#         return Column(String, primary_key=True, unique=True, default=newUuidAsString)
+#     else:
+#         return Column(
+#             name, String, primary_key=True, unique=True, default=newUuidAsString
+#         )
 
-def CreateUUIDFKey(allowCross=False):
-    def UUIDFKey(ForeignKey=None, *, nullable=False, index=True):
-        assert ForeignKey is not None, "ForeignKey is mandatory"
-        return Column(
-            ForeignKey, index=index, nullable=nullable
-        )
+# def CreateUUIDFKey(allowCross=False):
+#     def UUIDFKey(ForeignKey=None, *, nullable=False, index=True):
+#         assert ForeignKey is not None, "ForeignKey is mandatory"
+#         return Column(
+#             ForeignKey, index=index, nullable=nullable
+#         )
     
-    def UUIDFKeyDummy(ForeignKey=None, *, nullable=False, index=True):
-        return Column(
-            String, index=index, nullable=nullable
-        )
+#     def UUIDFKeyDummy(ForeignKey=None, *, nullable=False, index=True):
+#         return Column(
+#             String, index=index, nullable=nullable
+#         )
     
-    if allowCross:
-        return UUIDFKey
-    else:
-        return UUIDFKeyDummy
+#     if allowCross:
+#         return UUIDFKey
+#     else:
+#         return UUIDFKeyDummy
     
-UUIDFKey = CreateUUIDFKey()
+# UUIDFKey = CreateUUIDFKey()
+
+
+def UUIDFKey(comment=None, nullable=True, **kwargs):
+    return Column(Uuid, index=True, comment=comment, nullable=nullable, **kwargs)
+
+def UUIDColumn():
+    return Column(Uuid, primary_key=True, comment="primary key", default=uuid)
 
 # id = Column(UUID(as_uuid=True), primary_key=True, server_default=sqlalchemy.text("uuid_generate_v4()"),)
 
@@ -66,8 +76,8 @@ class SurveyModel(BaseModel):
 
     created = Column(DateTime, server_default=sqlalchemy.sql.func.now())
     lastchange = Column(DateTime, server_default=sqlalchemy.sql.func.now())
-    createdby = UUIDFKey(ForeignKey("users.id"), index=True, nullable=True)
-    changedby = UUIDFKey(ForeignKey("users.id"), index=True, nullable=True)
+    createdby = UUIDFKey(ForeignKey("users.id"), nullable=True)
+    changedby = UUIDFKey(ForeignKey("users.id"), nullable=True)
 
 
 class SurveyTypeModel(BaseModel):
@@ -183,6 +193,7 @@ def ComposeConnectionString():
     password = os.environ.get("POSTGRES_PASSWORD", "example")
     database = os.environ.get("POSTGRES_DB", "data")
     hostWithPort = os.environ.get("POSTGRES_HOST", "postgres:5432")
+    hostWithPort = os.environ.get("POSTGRES_HOST", "host.docker.internal:5432")
 
     driver = "postgresql+asyncpg"  # "postgresql+psycopg2"
     connectionstring = f"{driver}://{user}:{password}@{hostWithPort}/{database}"

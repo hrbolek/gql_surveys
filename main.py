@@ -10,12 +10,12 @@ from strawberry.fastapi import GraphQLRouter
 
 ## Definice GraphQL typu (pomoci strawberry https://strawberry.rocks/)
 ## Strawberry zvoleno kvuli moznosti mit federovane GraphQL API (https://strawberry.rocks/docs/guides/federation, https://www.apollographql.com/docs/federation/)
-from gql_surveys.GraphTypeDefinitions import Query
+from src.GraphTypeDefinitions import Query
 
 ## Definice DB typu (pomoci SQLAlchemy https://www.sqlalchemy.org/)
 ## SQLAlchemy zvoleno kvuli moznost komunikovat s DB asynchronne
 ## https://docs.sqlalchemy.org/en/14/core/future.html?highlight=select#sqlalchemy.future.select
-from gql_surveys.DBDefinitions import startEngine, ComposeConnectionString
+from src.DBDefinitions import startEngine, ComposeConnectionString
 
 ## Zabezpecuje prvotni inicializaci DB a definovani Nahodne struktury pro "Univerzity"
 
@@ -36,7 +36,7 @@ def singleCall(asyncFunc):
     return result
 
 
-from gql_surveys.DBFeeder import initDB
+from src.DBFeeder import initDB
 
 
 @singleCall
@@ -70,7 +70,7 @@ async def RunOnceAndReturnSessionMaker():
 
 
 from strawberry.asgi import GraphQL
-from gql_surveys.Dataloaders import createLoaders_3, createLoaders
+from src.Dataloaders import createLoaders
 
 class MyGraphQL(GraphQL):
     """Rozsirena trida zabezpecujici praci se session"""
@@ -90,12 +90,12 @@ class MyGraphQL(GraphQL):
             "session": self._session,
             "asyncSessionMaker": asyncSessionMaker,
             "user": self._user,
-            "all": await createLoaders(asyncSessionMaker)
+            "loaders": createLoaders(asyncSessionMaker)
             #"all": await createLoaders_3(asyncSessionMaker)
         }
 
 
-from gql_surveys.GraphTypeDefinitions import schema
+from src.GraphTypeDefinitions import schema
 
 ## ASGI app, kterou "moutneme"
 graphql_app = MyGraphQL(schema, graphiql=True, allow_queries_via_get=True)
