@@ -76,8 +76,9 @@ class SurveyModel(BaseModel):
 
     created = Column(DateTime, server_default=sqlalchemy.sql.func.now())
     lastchange = Column(DateTime, server_default=sqlalchemy.sql.func.now())
-    createdby = UUIDFKey(ForeignKey("users.id"), nullable=True)
-    changedby = UUIDFKey(ForeignKey("users.id"), nullable=True)
+    createdby = UUIDFKey(nullable=True)
+    changedby = UUIDFKey(nullable=True)
+    rbacobject = UUIDFKey(nullable=True)
 
 
 class SurveyTypeModel(BaseModel):
@@ -91,7 +92,7 @@ class SurveyTypeModel(BaseModel):
     lastchange = Column(DateTime, server_default=sqlalchemy.sql.func.now())
     createdby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
     changedby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
-
+    rbacobject = UUIDFKey(nullable=True)
 
 
 class QuestionModel(BaseModel):
@@ -108,6 +109,7 @@ class QuestionModel(BaseModel):
     lastchange = Column(DateTime, server_default=sqlalchemy.sql.func.now())
     createdby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
     changedby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
+    rbacobject = UUIDFKey(nullable=True)
 
 
 class QuestionValueModel(BaseModel):
@@ -123,6 +125,7 @@ class QuestionValueModel(BaseModel):
     lastchange = Column(DateTime, server_default=sqlalchemy.sql.func.now())
     createdby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
     changedby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
+    rbacobject = UUIDFKey(nullable=True)
 
 
 class QuestionTypeModel(BaseModel):
@@ -134,6 +137,7 @@ class QuestionTypeModel(BaseModel):
     lastchange = Column(DateTime, server_default=sqlalchemy.sql.func.now())
     createdby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
     changedby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
+    rbacobject = UUIDFKey(nullable=True)
 
 
 class AnswerModel(BaseModel):
@@ -150,6 +154,7 @@ class AnswerModel(BaseModel):
     lastchange = Column(DateTime, server_default=sqlalchemy.sql.func.now())
     createdby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
     changedby = UUIDFKey(nullable=True)#Column(ForeignKey("users.id"), index=True, nullable=True)
+    rbacobject = UUIDFKey(nullable=True)
 
 
 from sqlalchemy import create_engine
