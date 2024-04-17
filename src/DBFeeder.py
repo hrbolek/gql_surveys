@@ -275,8 +275,7 @@ def get_demodata():
 
 async def initDB(asyncSessionMaker):
 
-    defaultNoDemo = "False"
-    if defaultNoDemo == os.environ.get("DEMO", defaultNoDemo):
+    if os.environ.get("DEMODATA", None) == "False":
         dbModels = [
             QuestionTypeModel,
             SurveyTypeModel,
