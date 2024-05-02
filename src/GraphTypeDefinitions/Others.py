@@ -342,13 +342,13 @@ answer_by_id = strawberry.field(
     
 #     @strawberry.field(description="""Finds a survey type by its id""")
 #     async def survey_type_by_id(
-#         self, info: strawberry.types.Info, id: strawberry.ID
+#         self, info: strawberry.types.Info, id: IDType
 #     ) -> Union[SurveyTypeGQLModel, None]:
 #         return await SurveyTypeGQLModel.resolve_reference(info, id)
     
 #     @strawberry.field(description="""Finds a survey by its id""")
 #     async def survey_by_id(
-#         self, info: strawberry.types.Info, id: strawberry.ID
+#         self, info: strawberry.types.Info, id: IDType
 #     ) -> Union[SurveyGQLModel, None]:
 #         return await SurveyGQLModel.resolve_reference(info, id)
 
@@ -362,13 +362,13 @@ answer_by_id = strawberry.field(
     
 #     @strawberry.field(description="""Question by id""")
 #     async def question_by_id(
-#         self, info: strawberry.types.Info, id: strawberry.ID
+#         self, info: strawberry.types.Info, id: IDType
 #     ) -> Union[QuestionGQLModel, None]:
 #         return await QuestionGQLModel.resolve_reference(info, id)
 
 #     @strawberry.field(description="""Question type by id""")
 #     async def question_type_by_id(
-#         self, info: strawberry.types.Info, id: strawberry.ID
+#         self, info: strawberry.types.Info, id: IDType
 #     ) -> Union[QuestionTypeGQLModel, None]:
 #         return await QuestionTypeGQLModel.resolve_reference(info, id)
 
@@ -382,7 +382,7 @@ answer_by_id = strawberry.field(
 
 #     @strawberry.field(description="""Answer by id""")
 #     async def answer_by_id(
-#         self, info: strawberry.types.Info, id: strawberry.ID
+#         self, info: strawberry.types.Info, id: IDType
 #     ) -> Union[AnswerGQLModel, None]:
 #         print(id, flush=True)
 #         return await AnswerGQLModel.resolve_reference(info, id)
@@ -390,7 +390,7 @@ answer_by_id = strawberry.field(
 
 #     @strawberry.field(description="""Answer by user""")
 #     async def answers_by_user(
-#         self, info: strawberry.types.Info, user_id: strawberry.ID
+#         self, info: strawberry.types.Info, user_id: IDType
 #     ) -> Union[AnswerGQLModel, None]:
 #         loader = AnswerGQLModel.getLoader(info)
 #         result = await loader.filter_by(user_id=user_id)
@@ -417,25 +417,25 @@ answer_by_id = strawberry.field(
 from typing import Optional
 import datetime
 
-@strawberry.input
+@strawberry.input(description="")
 class SurveyInsertGQLModel:
     name: str
     name_en: Optional[str] = ""
 
-    type_id: Optional[strawberry.ID] = None
-    id: Optional[strawberry.ID] = None
+    type_id: Optional[IDType] = None
+    id: Optional[IDType] = None
 
-@strawberry.input
+@strawberry.input(description="")
 class SurveyUpdateGQLModel:
     lastchange: datetime.datetime
-    id: strawberry.ID
+    id: IDType
     name: Optional[str] = None
     name_en: Optional[str] = None
-    type_id: Optional[strawberry.ID] = None
+    type_id: Optional[IDType] = None
     
-@strawberry.type
+@strawberry.type(description="")
 class SurveyResultGQLModel:
-    id: strawberry.ID = None
+    id: IDType = None
     msg: str = None
 
     @strawberry.field(description="""Result of survey operation""")
@@ -445,7 +445,7 @@ class SurveyResultGQLModel:
 
 @strawberry.mutation(description="""Creates new survey""")
 async def survey_insert(self, info: strawberry.types.Info, survey: SurveyInsertGQLModel) -> SurveyResultGQLModel:
-    loader = getLoaders(info).surveys
+    loader = SurveyGQLModel.getLoader(info)
     row = await loader.insert(survey)
     result = SurveyResultGQLModel()
     result.msg = "ok"
@@ -454,7 +454,7 @@ async def survey_insert(self, info: strawberry.types.Info, survey: SurveyInsertG
 
 @strawberry.mutation(description="""Updates the survey""")
 async def survey_update(self, info: strawberry.types.Info, survey: SurveyUpdateGQLModel) -> SurveyResultGQLModel:
-    loader = getLoaders(info).surveys
+    loader = SurveyGQLModel.getLoader(info)
     row = await loader.update(survey)
     result = SurveyResultGQLModel()
     result.msg = "ok"
@@ -464,10 +464,10 @@ async def survey_update(self, info: strawberry.types.Info, survey: SurveyUpdateG
     return result
 
 @strawberry.mutation(description="""Assigns the survey to the user. For all questions in the survey are created empty answers for the user.""")
-async def survey_assing_to(self, info: strawberry.types.Info, survey_id: strawberry.ID, user_id: strawberry.ID) -> SurveyResultGQLModel:
-    loader = getLoaders(info).questions
+async def survey_assing_to(self, info: strawberry.types.Info, survey_id: IDType, user_id: IDType) -> SurveyResultGQLModel:
+    loader = QuestionGQLModel.getLoader(info)
     questions = await loader.filter_by(survey_id=survey_id)
-    loader = getLoaders(info).answers
+    loader = AnswerGQLModel.getLoader(info)
     for q in questions:
         exists = await loader.filter_by(question_id=q.id, user_id=user_id)
         if next(exists, None) is None:
@@ -482,14 +482,14 @@ async def survey_assing_to(self, info: strawberry.types.Info, survey_id: strawbe
 @strawberry.input
 class AnswerUpdateGQLModel:
     lastchange: datetime.datetime
-    id: strawberry.ID
+    id: IDType
     value: Optional[str] = None
     aswered: Optional[bool] = None   
     expired: Optional[bool] = None   
     
 @strawberry.type
 class AnswerResultGQLModel:
-    id: strawberry.ID = None
+    id: IDType = None
     msg: str = None
 
     @strawberry.field(description="""Result of answer operation""")
@@ -499,7 +499,7 @@ class AnswerResultGQLModel:
 
 @strawberry.mutation(description="""Allows update a question.""")
 async def answer_update(self, info: strawberry.types.Info, answer: AnswerUpdateGQLModel) -> AnswerResultGQLModel:
-    loader = getLoaders(info).answers
+    loader = AnswerGQLModel.getLoader(info)
     row = await loader.update(answer)
     result = AnswerResultGQLModel()
     result.msg = "ok"
@@ -511,24 +511,24 @@ async def answer_update(self, info: strawberry.types.Info, answer: AnswerUpdateG
 @strawberry.input
 class QuestionInsertGQLModel:
     name: str
-    survey_id: strawberry.ID
+    survey_id: IDType
     name_en: Optional[str] = ""
-    type_id: Optional[strawberry.ID] = None
+    type_id: Optional[IDType] = None
     order: Optional[int] = 1
-    id: Optional[strawberry.ID] = None
+    id: Optional[IDType] = None
 
 @strawberry.input
 class QuestionUpdateGQLModel:
     lastchange: datetime.datetime
-    id: strawberry.ID
+    id: IDType
     name: Optional[str] = None
     name_en: Optional[str] = None
-    type_id: Optional[strawberry.ID] = None
+    type_id: Optional[IDType] = None
     order: Optional[int] = None
 
 @strawberry.type
 class QuestionResultGQLModel:
-    id: strawberry.ID = None
+    id: IDType = None
     msg: str = None
 
     @strawberry.field(description="""Result of question operation""")
@@ -538,7 +538,7 @@ class QuestionResultGQLModel:
 
 @strawberry.mutation(description="""Creates new question in the survey""")
 async def question_insert(self, info: strawberry.types.Info, question: QuestionInsertGQLModel) -> QuestionResultGQLModel:
-    loader = getLoaders(info).questions
+    loader = QuestionGQLModel.getLoader(info)
     row = await loader.insert(question)
     result = QuestionResultGQLModel()
     result.msg = "ok"
@@ -547,7 +547,7 @@ async def question_insert(self, info: strawberry.types.Info, question: QuestionI
 
 @strawberry.mutation(description="""Updates question""")
 async def question_update(self, info: strawberry.types.Info, question: QuestionUpdateGQLModel) -> QuestionResultGQLModel:
-    loader = getLoaders(info).questions
+    loader = QuestionGQLModel.getLoader(info)
     row = await loader.update(question)
     result = QuestionResultGQLModel()
     result.msg = "ok"
@@ -559,23 +559,23 @@ async def question_update(self, info: strawberry.types.Info, question: QuestionU
 
 @strawberry.input
 class QuestionValueInsertGQLModel:
-    question_id: strawberry.ID
+    question_id: IDType
     name: str
     name_en: Optional[str] = ""   
     order: Optional[int] = 1
-    id: Optional[strawberry.ID] = None
+    id: Optional[IDType] = None
 
 @strawberry.input
 class QuestionValueUpdateGQLModel:
     lastchange: datetime.datetime
-    id: strawberry.ID
+    id: IDType
     name: Optional[str] = None
     name_en: Optional[str] = None
     order: Optional[int] = None
 
 @strawberry.type
 class QuestionValueResultGQLModel:
-    id: strawberry.ID = None
+    id: IDType = None
     msg: str = None
 
     @strawberry.field(description="""Result of question operation""")
@@ -585,7 +585,7 @@ class QuestionValueResultGQLModel:
 
 @strawberry.mutation(description="""Creates new question value for closed question""")
 async def question_value_insert(self, info: strawberry.types.Info, question_value: QuestionValueInsertGQLModel) -> QuestionValueResultGQLModel:
-    loader = getLoaders(info).questionvalues
+    loader = QuestionValueGQLModel.getLoader(info)
     row = await loader.insert(question_value)
     result = QuestionValueResultGQLModel()
     result.msg = "ok"
@@ -594,7 +594,7 @@ async def question_value_insert(self, info: strawberry.types.Info, question_valu
 
 @strawberry.mutation(description="""Updates question value / possible answer""")
 async def question_value_update(self, info: strawberry.types.Info, question_value: QuestionValueUpdateGQLModel) -> QuestionValueResultGQLModel:
-    loader = getLoaders(info).questionvalues
+    loader = QuestionValueGQLModel.getLoader(info)
     row = await loader.update(question_value)
     result = QuestionValueResultGQLModel()
     result.msg = "ok"
@@ -604,8 +604,8 @@ async def question_value_update(self, info: strawberry.types.Info, question_valu
     return result
 
 @strawberry.mutation(description="""Updates question value / possible answer""")
-async def question_value_delete(self, info: strawberry.types.Info, question_value_id: strawberry.ID) -> QuestionResultGQLModel:
-    loader = getLoaders(info).questionvalues
+async def question_value_delete(self, info: strawberry.types.Info, question_value_id: IDType) -> QuestionResultGQLModel:
+    loader = QuestionValueGQLModel.getLoader(info)
     row = await loader.load(question_value_id)
     await loader.delete(question_value_id)
     result = QuestionResultGQLModel()
