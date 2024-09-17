@@ -72,4 +72,5 @@ class Mutation:
     
     pass
 
-schema = strawberry.federation.Schema(Query, mutation=Mutation)
+from .externals import UserGQLModel
+schema = strawberry.federation.Schema(Query, mutation=Mutation, types=(UserGQLModel, ))
